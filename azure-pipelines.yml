@@ -13,6 +13,13 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+
+- task: AdvancedSecurity-Codeql-Init@1
+  inputs:
+    languages: 'csharp'
+    querysuite: 'code-scanning'
+    buildtype: 'None'
+
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
