@@ -48,6 +48,12 @@ steps:
   inputs:
     pollingTimeoutSec: '300'
 
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    feedsToUse: 'select'
+    vstsFeed: 'd219ec30-aea4-4942-835c-82081597e8ee'
+
 - task: Docker@2
   inputs:
     containerRegistry: 'MVCDocker'
