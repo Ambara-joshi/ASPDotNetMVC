@@ -20,6 +20,14 @@ steps:
     querysuite: 'code-scanning'
     buildtype: 'None'
 
+- task: SonarCloudPrepare@4
+  inputs:
+    SonarQube: 'SonarCloudMVC'
+    organization: 'devops-ambara'
+    scannerMode: 'dotnet'
+    projectKey: 'devops-Ambara_ASPDotNetMVC'
+    projectName: 'ASPDotNetMVC'
+
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
