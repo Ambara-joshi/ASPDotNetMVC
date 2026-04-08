@@ -23,8 +23,13 @@ steps:
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
-- task: AdvancedSecurity-Codeql-Analyze@1
+# - task: AdvancedSecurity-Codeql-Analyze@1
+#   inputs:
+#     WaitForProcessing: true
+
+- task: AdvancedSecurity-Publish@1
   inputs:
+    EnableRecursiveScanning: true
     WaitForProcessing: true
 
 - task: Docker@2
