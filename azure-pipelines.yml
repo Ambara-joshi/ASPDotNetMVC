@@ -63,6 +63,10 @@ steps:
     command: 'test'
     arguments: '--configuration Release --collect "Code coverage"'
 
+- task: PublishCodeCoverageResults@2
+  inputs:
+    summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+
 - task: Docker@2
   inputs:
     containerRegistry: 'MVCDocker'
