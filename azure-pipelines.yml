@@ -19,7 +19,7 @@ steps:
 - task: Docker@2
   inputs:
     containerRegistry: 'MVCDocker'
-    repository: 'ASPDotNetMVC'
+    repository: 'ambarajv/ASPDotNetMVC'
     command: 'buildAndPush'
     Dockerfile: '$(Build.SourcesDirectory)/ASPDotNetMVC/Dockerfile'
     buildContext: '$(Build.SourcesDirectory)/ASPDotNetMVC'
