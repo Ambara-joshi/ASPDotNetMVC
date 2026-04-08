@@ -40,6 +40,14 @@ steps:
     EnableRecursiveScanning: true
     WaitForProcessing: true
 
+- task: SonarCloudAnalyze@4
+  inputs:
+    jdkversion: 'JAVA_HOME_17_X64'
+
+- task: SonarCloudPublish@4
+  inputs:
+    pollingTimeoutSec: '300'
+
 - task: Docker@2
   inputs:
     containerRegistry: 'MVCDocker'
