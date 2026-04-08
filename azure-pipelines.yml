@@ -58,6 +58,10 @@ steps:
   inputs:
     command: 'build'
 
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+
 - task: Docker@2
   inputs:
     containerRegistry: 'MVCDocker'
