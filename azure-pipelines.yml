@@ -54,6 +54,10 @@ steps:
     feedsToUse: 'select'
     vstsFeed: 'd219ec30-aea4-4942-835c-82081597e8ee'
 
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+
 - task: Docker@2
   inputs:
     containerRegistry: 'MVCDocker'
