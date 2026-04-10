@@ -78,6 +78,20 @@ steps:
 - task: PublishCodeCoverageResults@2
   inputs:
     summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+
+#Artifacts
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
+
+#Publish Build Artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
   
 #Docker Configuration
 - task: Docker@2
