@@ -34,6 +34,13 @@ stages:
         projectKey: 'devops-Ambara_ASPDotNetMVC'
         projectName: 'ASPDotNetMVC'
 
+#.NetCore Restore
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        feedsToUse: 'select'
+        vstsFeed: 'd219ec30-aea4-4942-835c-82081597e8ee'
+
 #Build
     - script: dotnet build --configuration $(buildConfiguration)
       displayName: 'dotnet build $(buildConfiguration)'
@@ -59,13 +66,6 @@ stages:
     - task: SonarCloudPublish@4
       inputs:
         pollingTimeoutSec: '300'
-
-#.NetCore Restore
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: 'restore'
-        feedsToUse: 'select'
-        vstsFeed: 'd219ec30-aea4-4942-835c-82081597e8ee'
 
 #.NetCore Build
     - task: DotNetCoreCLI@2
