@@ -12,27 +12,31 @@ pool:
 variables:
   buildConfiguration: 'Release'
 
-steps:
-
+#steps:
+stages:
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
 #AdvanceSecurity Initiate
-- task: AdvancedSecurity-Codeql-Init@1
-  inputs:
-    languages: 'csharp'
-    querysuite: 'code-scanning'
-    buildtype: 'None'
+    - task: AdvancedSecurity-Codeql-Init@1
+      inputs:
+        languages: 'csharp'
+        querysuite: 'code-scanning'
+        buildtype: 'None'
 
 #SonarCloud Prepare
-- task: SonarCloudPrepare@4
-  inputs:
-    SonarQube: 'SonarCloudMVC'
-    organization: 'devops-ambara'
-    scannerMode: 'dotnet'
-    projectKey: 'devops-Ambara_ASPDotNetMVC'
-    projectName: 'ASPDotNetMVC'
+    - task: SonarCloudPrepare@4
+      inputs:
+        SonarQube: 'SonarCloudMVC'
+        organization: 'devops-ambara'
+        scannerMode: 'dotnet'
+        projectKey: 'devops-Ambara_ASPDotNetMVC'
+        projectName: 'ASPDotNetMVC'
 
 #Build
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+    - script: dotnet build --configuration $(buildConfiguration)
+      displayName: 'dotnet build $(buildConfiguration)'
 
 #AdvanceSecurity Analysis
 
@@ -41,63 +45,63 @@ steps:
 #     WaitForProcessing: true
 
 #AdvanceSecurity Publish
-- task: AdvancedSecurity-Publish@1
-  inputs:
-    EnableRecursiveScanning: true
-    WaitForProcessing: true
+    - task: AdvancedSecurity-Publish@1
+      inputs:
+        EnableRecursiveScanning: true
+        WaitForProcessing: true
 
 #SonarCloud Analysis
-- task: SonarCloudAnalyze@4
-  inputs:
-    jdkversion: 'JAVA_HOME_17_X64'
+    - task: SonarCloudAnalyze@4
+      inputs:
+        jdkversion: 'JAVA_HOME_17_X64'
 
 #SonarCloud Publish
-- task: SonarCloudPublish@4
-  inputs:
-    pollingTimeoutSec: '300'
+    - task: SonarCloudPublish@4
+      inputs:
+        pollingTimeoutSec: '300'
 
 #.NetCore Restore
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'restore'
-    feedsToUse: 'select'
-    vstsFeed: 'd219ec30-aea4-4942-835c-82081597e8ee'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        feedsToUse: 'select'
+        vstsFeed: 'd219ec30-aea4-4942-835c-82081597e8ee'
 
 #.NetCore Build
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'build'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
 
 #.NetCore Test
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'test'
-    arguments: '--configuration Release --collect "Code coverage"'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        arguments: '--configuration Release --collect "Code coverage"'
 
 #Code Coverage
-- task: PublishCodeCoverageResults@2
-  inputs:
-    summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+    - task: PublishCodeCoverageResults@2
+      inputs:
+        summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
 
 #Artifacts
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'publish'
-    publishWebProjects: true
-    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
 
 #Publish Build Artifacts
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
   
 #Docker Configuration
-- task: Docker@2
-  inputs:
-    containerRegistry: 'MVCDocker'
-    repository: 'ambarajv/ASPDotNetMVC'
-    command: 'buildAndPush'
-    Dockerfile: '$(Build.SourcesDirectory)/ASPDotNetMVC/Dockerfile'
-    buildContext: '$(Build.SourcesDirectory)/ASPDotNetMVC'
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'MVCDocker'
+        repository: 'ambarajv/ASPDotNetMVC'
+        command: 'buildAndPush'
+        Dockerfile: '$(Build.SourcesDirectory)/ASPDotNetMVC/Dockerfile'
+        buildContext: '$(Build.SourcesDirectory)/ASPDotNetMVC'
