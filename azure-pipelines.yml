@@ -67,6 +67,16 @@ stages:
     - script: dotnet build --configuration $(buildConfiguration)
       displayName: 'dotnet build $(buildConfiguration)'
 
+#SonarCloud Analysis
+    - task: SonarCloudAnalyze@4
+      inputs:
+        jdkversion: 'JAVA_HOME_17_X64'
+
+#SonarCloud Publish
+    - task: SonarCloudPublish@4
+      inputs:
+        pollingTimeoutSec: '300'
+
 #AdvanceSecurity Analysis
 
 # - task: AdvancedSecurity-Codeql-Analyze@1
@@ -105,16 +115,6 @@ stages:
       inputs:
         EnableRecursiveScanning: true
         WaitForProcessing: true
-
-#SonarCloud Analysis
-    - task: SonarCloudAnalyze@4
-      inputs:
-        jdkversion: 'JAVA_HOME_17_X64'
-
-#SonarCloud Publish
-    - task: SonarCloudPublish@4
-      inputs:
-        pollingTimeoutSec: '300'
 
 #----------------------Docker Stage------------------------------#
 
