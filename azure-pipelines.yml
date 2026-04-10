@@ -12,6 +12,8 @@ pool:
 variables:
   buildConfiguration: 'Release'
 
+#----------------------Build Stage------------------------------#
+
 #steps:
 stages:
 - stage: Build
@@ -41,6 +43,26 @@ stages:
         feedsToUse: 'select'
         vstsFeed: 'd219ec30-aea4-4942-835c-82081597e8ee'
 
+
+#.NetCore Build
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
+
+#Artifacts
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
+
+#Publish Build Artifacts
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
 #Build
     - script: dotnet build --configuration $(buildConfiguration)
       displayName: 'dotnet build $(buildConfiguration)'
@@ -50,6 +72,33 @@ stages:
 # - task: AdvancedSecurity-Codeql-Analyze@1
 #   inputs:
 #     WaitForProcessing: true
+
+#----------------------Test Stage------------------------------#
+
+- stage: Test
+  dependsOn: Build
+  jobs:
+  - job: TestJob
+    steps:
+
+#.NetCore Test
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        arguments: '--configuration Release --collect "Code coverage"'
+
+#Code Coverage
+    - task: PublishCodeCoverageResults@2
+      inputs:
+        summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+
+#----------------------Analyze Stage------------------------------#
+
+- stage: Analyze
+  dependsOn: Test
+  jobs:
+  - job: AnalyzeJob
+    steps:
 
 #AdvanceSecurity Publish
     - task: AdvancedSecurity-Publish@1
@@ -67,41 +116,46 @@ stages:
       inputs:
         pollingTimeoutSec: '300'
 
-#.NetCore Build
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: 'build'
+#----------------------Docker Stage------------------------------#
 
-#.NetCore Test
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: 'test'
-        arguments: '--configuration Release --collect "Code coverage"'
+- stage: Docker
+  dependsOn: Analyze
+  jobs:
+  - job: DockerJob
+    steps:
 
-#Code Coverage
-    - task: PublishCodeCoverageResults@2
-      inputs:
-        summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
-
-#Artifacts
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: 'publish'
-        publishWebProjects: true
-        arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
-
-#Publish Build Artifacts
-    - task: PublishBuildArtifacts@1
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'drop'
-        publishLocation: 'Container'
-  
 #Docker Configuration
+    #Docker Build
     - task: Docker@2
       inputs:
         containerRegistry: 'MVCDocker'
         repository: 'ambarajv/ASPDotNetMVC'
-        command: 'buildAndPush'
+        command: 'build'
         Dockerfile: '$(Build.SourcesDirectory)/ASPDotNetMVC/Dockerfile'
         buildContext: '$(Build.SourcesDirectory)/ASPDotNetMVC'
+        tags: |
+          $(Build.BuildId)
+          latest
+    #Docker Push
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'MVCDocker'
+        repository: 'ambarajv/ASPDotNetMVC'
+        command: 'push'
+        tags: |
+          $(Build.BuildId)
+          latest
+
+#----------------------Deploy Stage------------------------------#
+
+# - stage: Deploy
+#   dependsOn: Docker
+#   jobs:
+#   - job: DeployJob
+#     steps:
+
+#     - task: AzureWebAppContainer@1
+#       inputs:
+#         azureSubscription: 'Your-Service-Connection'
+#         appName: 'ASPDotNetMVC'
+#         containers: 'ambarajv/ASPDotNetMVC:latest'
